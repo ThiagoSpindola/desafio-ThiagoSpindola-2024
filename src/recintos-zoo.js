@@ -41,6 +41,7 @@ class RecintosZoo {
             let recinto = recintoApto[i];
             let qntEspecies = recinto.animais.length;
 
+            // 3) Animais já presentes no recinto devem continuar confortáveis com a inclusão do(s) novo(s)
             // Verificando se há mais de uma espécie no recinto
             let unico = false;
             if (qntEspecies == 0) {
@@ -53,6 +54,7 @@ class RecintosZoo {
             else if (qntEspecies == 1) {
                 unico = recinto.animais[0].animal === animalInfo.animal;;
 
+                // 4) Hipopótamo(s) só tolera(m) outras espécies estando num recinto com savana e rio
                 if (animalInfo.animal === 'HIPOPOTAMO' && !recinto.bioma.includes('savana') && !recinto.bioma.includes('rio')) {
                     continue;
                 }
@@ -60,6 +62,7 @@ class RecintosZoo {
             else if (qntEspecies > 1) {
                 unico = false;
 
+                // 4) Hipopótamo(s) só tolera(m) outras espécies estando num recinto com savana e rio
                 if (animalInfo.animal === 'HIPOPOTAMO' && !recinto.bioma.includes('savana') && !recinto.bioma.includes('rio')) {
                     continue;
                 }
@@ -91,14 +94,30 @@ class RecintosZoo {
             // Verificando se esse recinto possui espaço suficiente para receber os animais
             let espacoLivre = 0;
             let espacoOcupado = 0;
+            
+            let confortavel = true;
             for (let j = 0; j < recinto.animais.length; j++) {
-                let animal = recinto.animais[j];
-                let animalInfo = this.animaisValidos.find(especie => especie.animal === animal.animal);
+                let animalRecinto = recinto.animais[j];
+                let animalInfoRecinto = this.animaisValidos.find(especie => especie.animal === animalRecinto.animal);
 
-                espacoOcupado += animalInfo.tamanho * animal.quantidade;
+                espacoOcupado += animalInfoRecinto.tamanho * animalRecinto.quantidade;
+
+                // Verificar as condições para os animais já existentes no recinto
+                // 4) Hipopótamo(s) só tolera(m) outras espécies estando num recinto com savana e rio
+                if (animalInfoRecinto.animal === 'HIPOPOTAMO' && unico == false &&
+                    ((recinto.bioma.includes('savana') && !recinto.bioma.includes('rio')) ||
+                     (!recinto.bioma.includes('savana') && recinto.bioma.includes('rio')))) {
+                        confortavel = false;
+                        break;
+                }
+            }
+
+            if (!confortavel) {
+                continue;
             }
 
             if (!unico) {
+                // 6) Quando há mais de uma espécie no mesmo recinto, é preciso considerar 1 espaço extra ocupado
                 espacoLivre = recinto.tamanho - espacoOcupado - 1;
             }
             else {
